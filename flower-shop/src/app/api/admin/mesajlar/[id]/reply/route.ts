@@ -5,9 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -41,7 +42,7 @@ export async function POST(
 
     // Orijinal mesajı bul
     const originalMsg = await prisma.message.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         sender: { select: { id: true, name: true, email: true } }
       }
@@ -61,7 +62,7 @@ export async function POST(
         receiverId: originalMsg.senderId || 'anonymous', // Orijinal gönderen
         content: JSON.stringify({
           type: 'reply',
-          originalMessageId: params.id,
+          originalMessageId: id,
           adminName: session.user.name,
           adminEmail: session.user.email,
           message: content,

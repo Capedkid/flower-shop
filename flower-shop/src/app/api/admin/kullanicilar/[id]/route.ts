@@ -5,9 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -31,14 +32,14 @@ export async function DELETE(
     }
 
     // Kendini silmeye çalışıyor mu kontrolü
-    if (admin.id.toString() === params.id) {
+    if (admin.id.toString() === id) {
       return NextResponse.json(
         { message: 'Kendinizi silemezsiniz.' },
         { status: 400 }
       );
     }
     const user = await prisma.user.delete({
-      where: { id: params.id },
+      where: { id },
       select: { id: true, name: true, email: true, role: true },
     });
 

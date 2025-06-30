@@ -5,9 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -31,7 +32,7 @@ export async function PUT(
     }
 
     // Kendi rolünü değiştirmeye çalışıyor mu kontrolü
-    if (admin.id.toString() === params.id) {
+    if (admin.id.toString() === id) {
       return NextResponse.json(
         { message: 'Kendi rolünüzü değiştiremezsiniz.' },
         { status: 400 }
@@ -47,7 +48,7 @@ export async function PUT(
       );
     }
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { role },
       select: { id: true, name: true, email: true, role: true },
     });
