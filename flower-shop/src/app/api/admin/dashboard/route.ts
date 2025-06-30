@@ -103,20 +103,20 @@ export async function GET() {
       totalOrders,
       totalProducts,
       totalRevenue: totalRevenue._sum.totalAmount || 0,
-      recentOrders: recentOrders.map(order => ({
+      recentOrders: recentOrders.map((order: any) => ({
         id: order.id,
         customerName: order.user.name,
         amount: order.totalAmount,
         status: order.status,
         date: order.createdAt
       })),
-      lowStockProducts: lowStockProducts.map(product => ({
+      lowStockProducts: lowStockProducts.map((product: { id: string; name: string; stock: number; }) => ({
         id: product.id,
         name: product.name,
         stock: product.stock,
         minStock: 10
       })),
-      recentUsers: recentUsers.map(user => ({
+      recentUsers: recentUsers.map((user: { id: string; name: string; email: string; createdAt: Date; }) => ({
         id: user.id,
         name: user.name,
         email: user.email,
