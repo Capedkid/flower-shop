@@ -5,9 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -18,38 +19,39 @@ export async function PUT(
     }
 
     // Admin kontrolü
-    const admin = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true, role: true },
+      select: { role: true },
     });
 
-    if (!admin || admin.role !== 'ADMIN') {
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
         { message: 'Bu işlem için yetkiniz yok.' },
         { status: 403 }
       );
     }
 
-    // Kendi rolünü değiştirmeye çalışıyor mu kontrolü
-    if (admin.id.toString() === params.id) {
+    const { role } = await request.json();
+
+    if (!role || !['USER', 'ADMIN'].includes(role)) {
+      return NextResponse.json(
+        { message: 'Geçerli bir rol gerekli (USER veya ADMIN).' },
+        { status: 400 }
+      );
+    }
+
+    // Kendi rolünü değiştirmeye çalışıyorsa engelle
+    if (session.user.id === id) {
       return NextResponse.json(
         { message: 'Kendi rolünüzü değiştiremezsiniz.' },
         { status: 400 }
       );
     }
 
-    const { role } = await request.json();
-
-    if (!['USER', 'ADMIN'].includes(role)) {
-      return NextResponse.json(
-        { message: 'Geçersiz rol.' },
-        { status: 400 }
-      );
-    }
     const updatedUser = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { role },
-      select: { id: true, name: true, email: true, role: true },
+      select: { id: true, name: true, email: true, role: true }
     });
 
     return NextResponse.json(updatedUser);

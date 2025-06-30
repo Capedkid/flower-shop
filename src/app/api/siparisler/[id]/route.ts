@@ -5,9 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -30,28 +31,19 @@ export async function GET(
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+          select: { id: true, name: true, email: true }
         },
         items: {
           include: {
             product: {
-              select: {
-                id: true,
-                name: true,
-                price: true,
-                image: true,
-              },
-            },
-          },
-        },
-      },
+              select: { id: true, name: true, price: true, image: true }
+            }
+          }
+        }
+      }
     });
 
     if (!order) {
@@ -80,9 +72,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -94,12 +87,38 @@ export async function PUT(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { role: true },
+      select: { id: true, role: true },
     });
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { message: 'You are not authorized to update orders.' },
+        { message: 'User not found.' },
+        { status: 404 }
+      );
+    }
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      select: { userId: true, status: true },
+    });
+
+    if (!order) {
+      return NextResponse.json(
+        { message: 'Order not found.' },
+        { status: 404 }
+      );
+    }
+
+    if (user.role !== 'ADMIN' && order.userId !== user.id) {
+      return NextResponse.json(
+        { message: 'You are not authorized to update this order.' },
+        { status: 403 }
+      );
+    }
+
+    if (user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { message: 'Only admins can update order status.' },
         { status: 403 }
       );
     }
@@ -113,7 +132,7 @@ export async function PUT(
       );
     }
 
-    const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+    const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'];
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
         { message: 'Invalid order status.' },
@@ -121,33 +140,24 @@ export async function PUT(
       );
     }
 
-    const order = await prisma.order.update({
-      where: { id: params.id },
+    const updatedOrder = await prisma.order.update({
+      where: { id },
       data: { status },
       include: {
         user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
+          select: { id: true, name: true, email: true }
         },
         items: {
           include: {
             product: {
-              select: {
-                id: true,
-                name: true,
-                price: true,
-                image: true,
-              },
-            },
-          },
-        },
-      },
+              select: { id: true, name: true, price: true, image: true }
+            }
+          }
+        }
+      }
     });
 
-    return NextResponse.json(order);
+    return NextResponse.json(updatedOrder);
   } catch (error) {
     console.error('Error updating order:', error);
     return NextResponse.json(
@@ -159,9 +169,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -173,21 +184,19 @@ export async function DELETE(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { role: true },
+      select: { id: true, role: true },
     });
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user) {
       return NextResponse.json(
-        { message: 'You are not authorized to delete orders.' },
-        { status: 403 }
+        { message: 'User not found.' },
+        { status: 404 }
       );
     }
 
     const order = await prisma.order.findUnique({
-      where: { id: params.id },
-      include: {
-        items: true,
-      },
+      where: { id },
+      select: { userId: true, status: true },
     });
 
     if (!order) {
@@ -197,25 +206,22 @@ export async function DELETE(
       );
     }
 
-    // Restore product stock
-    for (const item of order.items) {
-      await prisma.product.update({
-        where: { id: item.productId },
-        data: {
-          stock: {
-            increment: item.quantity,
-          },
-        },
-      });
+    if (user.role !== 'ADMIN' && order.userId !== user.id) {
+      return NextResponse.json(
+        { message: 'You are not authorized to delete this order.' },
+        { status: 403 }
+      );
     }
 
-    // Delete order items and order
-    await prisma.orderItem.deleteMany({
-      where: { orderId: params.id },
-    });
+    if (order.status !== 'PENDING') {
+      return NextResponse.json(
+        { message: 'Only pending orders can be deleted.' },
+        { status: 400 }
+      );
+    }
 
     await prisma.order.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(

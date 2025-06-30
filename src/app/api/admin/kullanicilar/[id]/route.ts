@@ -3,50 +3,144 @@ import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
-export async function DELETE(
+export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        { message: 'Oturum açmanız gerekiyor.' },
+        { message: 'You need to be logged in.' },
         { status: 401 }
       );
     }
 
     // Admin kontrolü
-    const admin = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true, role: true },
+      select: { role: true },
     });
 
-    if (!admin || admin.role !== 'ADMIN') {
+    if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'Bu işlem için yetkiniz yok.' },
+        { message: 'You do not have permission for this operation.' },
         { status: 403 }
       );
     }
 
-    // Kendini silmeye çalışıyor mu kontrolü
-    if (admin.id.toString() === params.id) {
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+        orders: {
+          select: {
+            id: true,
+            status: true,
+            totalAmount: true,
+            createdAt: true
+          }
+        },
+        _count: {
+          select: {
+            orders: true,
+            cartItems: true
+          }
+        }
+      }
+    });
+
+    if (!targetUser) {
       return NextResponse.json(
-        { message: 'Kendinizi silemezsiniz.' },
+        { message: 'User not found.' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(targetUser);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return NextResponse.json(
+      { message: 'An error occurred while fetching the user.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { message: 'You need to be logged in.' },
+        { status: 401 }
+      );
+    }
+
+    // Admin kontrolü
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { role: true },
+    });
+
+    if (!user || user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { message: 'You do not have permission for this operation.' },
+        { status: 403 }
+      );
+    }
+
+    // Kendini silmeye çalışıyorsa engelle
+    if (session.user.id === id) {
+      return NextResponse.json(
+        { message: 'You cannot delete your own account.' },
         { status: 400 }
       );
     }
-    const user = await prisma.user.delete({
-      where: { id: params.id },
-      select: { id: true, name: true, email: true, role: true },
+
+    const targetUser = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true }
     });
 
-    return NextResponse.json(user);
-  } catch (error) {
-    console.error('Kullanıcı silme hatası:', error);
+    if (!targetUser) {
+      return NextResponse.json(
+        { message: 'User not found.' },
+        { status: 404 }
+      );
+    }
+
+    // Admin kullanıcısını silmeye çalışıyorsa engelle
+    if (targetUser.role === 'ADMIN') {
+      return NextResponse.json(
+        { message: 'Cannot delete admin users.' },
+        { status: 400 }
+      );
+    }
+
+    await prisma.user.delete({
+      where: { id }
+    });
+
     return NextResponse.json(
-      { message: 'Kullanıcı silinirken bir hata oluştu.' },
+      { message: 'User deleted successfully.' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return NextResponse.json(
+      { message: 'An error occurred while deleting the user.' },
       { status: 500 }
     );
   }

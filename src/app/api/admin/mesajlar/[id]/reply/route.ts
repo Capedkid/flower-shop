@@ -5,9 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -20,7 +21,7 @@ export async function POST(
     // Admin kontrolü
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { role: true },
+      select: { id: true, role: true },
     });
 
     if (!user || user.role !== 'ADMIN') {
@@ -30,56 +31,61 @@ export async function POST(
       );
     }
 
-    const { content, originalMessage } = await request.json();
+    const { content } = await request.json();
 
-    if (!content || !originalMessage) {
+    if (!content || content.trim().length === 0) {
       return NextResponse.json(
-        { message: 'Yanıt içeriği ve orijinal mesaj gerekli.' },
+        { message: 'Mesaj içeriği gerekli.' },
         { status: 400 }
       );
     }
 
-    // Orijinal mesajı bul
-    const originalMsg = await prisma.message.findUnique({
-      where: { id: params.id },
+    // Konuşmayı bul
+    const conversation = await prisma.conversation.findUnique({
+      where: { id },
       include: {
-        sender: { select: { id: true, name: true, email: true } }
+        participants: {
+          select: { id: true }
+        }
       }
     });
 
-    if (!originalMsg) {
+    if (!conversation) {
       return NextResponse.json(
-        { message: 'Orijinal mesaj bulunamadı.' },
+        { message: 'Konuşma bulunamadı.' },
         { status: 404 }
       );
     }
 
-    // Yanıt mesajını oluştur
-    const replyMessage = await prisma.message.create({
+    // Admin konuşmaya katılımcı değilse ekle
+    if (!conversation.participants.some((p: { id: string }) => p.id === user.id)) {
+      await prisma.conversation.update({
+        where: { id },
+        data: {
+          participants: {
+            connect: { id: user.id }
+          }
+        }
+      });
+    }
+
+    // Mesajı gönder
+    const message = await prisma.message.create({
       data: {
-        senderId: session.user.id, // Admin
-        receiverId: originalMsg.senderId || 'anonymous', // Orijinal gönderen
-        content: JSON.stringify({
-          type: 'reply',
-          originalMessageId: params.id,
-          adminName: session.user.name,
-          adminEmail: session.user.email,
-          message: content,
-          timestamp: new Date().toISOString()
-        })
+        content: content.trim(),
+        senderId: user.id,
+        conversationId: id,
       },
       include: {
-        sender: { select: { id: true, name: true, email: true } },
-        receiver: { select: { id: true, name: true, email: true } }
+        sender: {
+          select: { id: true, name: true, email: true }
+        }
       }
     });
 
-    return NextResponse.json({
-      message: 'Yanıt başarıyla gönderildi.',
-      data: replyMessage
-    });
+    return NextResponse.json(message, { status: 201 });
   } catch (error) {
-    console.error('Mesaj yanıtlama hatası:', error);
+    console.error('Yanıt gönderme hatası:', error);
     return NextResponse.json(
       { message: 'Yanıt gönderilirken bir hata oluştu.' },
       { status: 500 }

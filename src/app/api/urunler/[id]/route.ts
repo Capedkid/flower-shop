@@ -5,11 +5,12 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: {
           select: {
@@ -39,9 +40,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -63,25 +65,25 @@ export async function PUT(
       );
     }
 
-    const { name, description, price, stock, categoryId, image } =
-      await request.json();
+    const body = await request.json();
+    const { name, description, price, stock, categoryId, image } = body;
 
-    if (!name || !description || !price || !stock || !categoryId || !image) {
+    if (!name || !description || !price || !stock || !categoryId) {
       return NextResponse.json(
         { message: 'All fields are required.' },
         { status: 400 }
       );
     }
 
-    const product = await prisma.product.update({
-      where: { id: params.id },
+    const updatedProduct = await prisma.product.update({
+      where: { id },
       data: {
         name,
         description,
         price: parseFloat(price),
         stock: parseInt(stock),
         categoryId,
-        image,
+        image: image || null,
       },
       include: {
         category: {
@@ -93,7 +95,7 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(product);
+    return NextResponse.json(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);
     return NextResponse.json(
@@ -105,9 +107,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -130,7 +133,7 @@ export async function DELETE(
     }
 
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(
