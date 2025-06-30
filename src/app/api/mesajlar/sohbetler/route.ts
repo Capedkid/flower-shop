@@ -25,7 +25,7 @@ export async function GET() {
         { status: 404 }
       );
     }
-    // Kullanıcının mesajlaştığı kişileri getir
+
     const sohbetler = await prisma.message.groupBy({
       by: ['senderId', 'receiverId'],
       where: {
@@ -44,7 +44,6 @@ export async function GET() {
       },
     });
 
-    // Her bir sohbet için kullanıcı bilgilerini getir
     const sohbetDetaylari = await Promise.all(
       sohbetler.map(async (sohbet) => {
         const otherUserId = sohbet.senderId === currentUser.id

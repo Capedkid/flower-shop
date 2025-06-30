@@ -84,7 +84,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if product exists and has enough stock
     const product = await prisma.product.findUnique({
       where: { id: productId },
       select: { stock: true },
@@ -104,7 +103,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if product already exists in cart
     const existingCartItem = await prisma.cartItem.findFirst({
       where: {
         userId: user.id,
@@ -115,7 +113,6 @@ export async function POST(request: Request) {
     let cartItem;
 
     if (existingCartItem) {
-      // Update existing cart item quantity
       cartItem = await prisma.cartItem.update({
         where: { id: existingCartItem.id },
         data: { quantity: existingCartItem.quantity + quantity },
@@ -131,7 +128,6 @@ export async function POST(request: Request) {
         },
       });
     } else {
-      // Create new cart item
       cartItem = await prisma.cartItem.create({
         data: {
           userId: user.id,

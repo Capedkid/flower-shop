@@ -71,7 +71,6 @@ export async function PUT(request: Request) {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    // Profile upsert
     await prisma.profile.upsert({
       where: { userId: user.id },
       update: { phone, address },
