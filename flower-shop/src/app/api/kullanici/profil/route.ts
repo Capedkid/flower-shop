@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 export async function GET() {
-  try {`n    const { id } = await params;
+  try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -53,7 +53,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  try {`n    const { id } = await params;
+  try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -71,7 +71,6 @@ export async function PUT(request: Request) {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    // Profile upsert
     await prisma.profile.upsert({
       where: { userId: user.id },
       update: { phone, address },

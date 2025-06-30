@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  try {`n    const { id } = await params;
+  try {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
@@ -15,7 +15,6 @@ export async function GET(request: Request) {
       );
     }
 
-    // Kullanıcının mesajlarını getir
     const messages = await prisma.message.findMany({
       where: {
         OR: [
@@ -45,10 +44,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  try {`n    const { id } = await params;
+  try {
     const { name, email, phone, subject, message, senderId, receiverId } = await request.json();
 
-    // Gerekli alanları kontrol et
     if (!name || !email || !subject || !message) {
       return NextResponse.json(
         { message: 'Ad, e-posta, konu ve mesaj alanları zorunludur.' },
@@ -56,7 +54,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // E-posta formatını kontrol et
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -65,7 +62,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Admin kullanıcısını bul (varsayılan admin)
     let adminUser = await prisma.user.findFirst({
       where: { role: 'ADMIN' }
     });
@@ -77,10 +73,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Mesajı veritabanına kaydet
     const newMessage = await prisma.message.create({
       data: {
-        senderId: senderId || null, // Giriş yapmamış kullanıcılar için null
+        senderId: senderId || null,
         receiverId: adminUser.id,
         content: JSON.stringify({
           name,

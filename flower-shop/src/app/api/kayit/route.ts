@@ -3,10 +3,9 @@ import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
-  try {`n    const { id } = await params;
+  try {
     const { name, email, password } = await request.json();
 
-    // E-posta kontrolü
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -18,20 +17,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Şifreyi hashle
     const hashedPassword = await hash(password, 12);
 
-    // Kullanıcıyı oluştur
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: 'USER', // Varsayılan rol
+        role: 'USER',
       },
     });
 
-    // Hassas bilgileri çıkar
     const { password: _, ...userWithoutPassword } = user;
 
     return NextResponse.json(
