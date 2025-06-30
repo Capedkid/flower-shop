@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 export async function GET() {
-  try {`n    const { id } = await params;
+  try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -65,7 +65,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  try {`n    const { id } = await params;
+  try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -96,7 +96,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Calculate total amount and validate stock
     let totalAmount = 0;
     for (const item of items) {
       const product = await prisma.product.findUnique({
@@ -122,7 +121,6 @@ export async function POST(request: Request) {
       totalAmount += product.price * item.quantity;
     }
 
-    // Create order and order items
     const order = await prisma.order.create({
       data: {
         userId: user.id,
@@ -159,7 +157,6 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update product stock
     for (const item of items) {
       await prisma.product.update({
         where: { id: item.productId },
@@ -171,7 +168,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // Clear user's cart
     await prisma.cartItem.deleteMany({
       where: { userId: user.id },
     });

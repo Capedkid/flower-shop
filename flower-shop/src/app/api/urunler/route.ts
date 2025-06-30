@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 export async function GET() {
-  try {`n    const { id } = await params;
+  try {
     const products = await prisma.product.findMany({
       include: {
         category: {
@@ -27,7 +27,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  try {`n    const { id } = await params;
+  try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {

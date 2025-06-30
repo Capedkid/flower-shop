@@ -17,7 +17,7 @@ export async function GET() {
     // Admin kontrolü
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { role: true },
+      select: { id: true, role: true },
     });
 
     if (!user || user.role !== 'ADMIN') {
@@ -31,9 +31,9 @@ export async function GET() {
     const messages = await prisma.message.findMany({
       where: {
         OR: [
-          { receiverId: session.user.id },
+          { receiverId: user.id },
           {
-            senderId: session.user.id,
+            senderId: user.id,
             // content içinde type: 'reply' olanlar
             content: { contains: '"type":"reply"' }
           }
