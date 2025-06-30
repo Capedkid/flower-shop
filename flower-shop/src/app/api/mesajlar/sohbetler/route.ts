@@ -45,7 +45,7 @@ export async function GET() {
     });
 
     const sohbetDetaylari = await Promise.all(
-      sohbetler.map(async (sohbet) => {
+      sohbetler.map(async (sohbet: { senderId: string; receiverId: string; _count: { _all: number } }) => {
         const otherUserId = sohbet.senderId === currentUser.id
           ? sohbet.receiverId 
           : sohbet.senderId;
