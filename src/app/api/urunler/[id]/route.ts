@@ -5,10 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const product = await prisma.product.findUnique({
       where: { id },
       include: {
@@ -40,10 +40,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -60,7 +60,7 @@ export async function PUT(
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'You are not authorized to update products.' },
+        { message: 'You do not have permission for this operation.' },
         { status: 403 }
       );
     }
@@ -96,7 +96,7 @@ export async function PUT(
     });
 
     return NextResponse.json(updatedProduct);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating product:', error);
     return NextResponse.json(
       { message: 'An error occurred while updating the product.' },
@@ -107,10 +107,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -127,7 +127,7 @@ export async function DELETE(
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'You are not authorized to delete products.' },
+        { message: 'You do not have permission for this operation.' },
         { status: 403 }
       );
     }
@@ -140,10 +140,10 @@ export async function DELETE(
       { message: 'Product deleted successfully.' },
       { status: 200 }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(
-      { message: 'An error occurred while deleting the product.', error: error?.message || String(error) },
+      { message: 'An error occurred while deleting the product.' },
       { status: 500 }
     );
   }

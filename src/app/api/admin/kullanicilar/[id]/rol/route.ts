@@ -5,10 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {

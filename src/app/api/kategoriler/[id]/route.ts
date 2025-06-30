@@ -5,10 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const category = await prisma.category.findUnique({
       where: { id },
       include: {
@@ -48,10 +48,10 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -68,24 +68,36 @@ export async function PUT(
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'You are not authorized to update categories.' },
+        { message: 'You do not have permission for this operation.' },
         { status: 403 }
       );
     }
 
-    const { name } = await request.json();
+    const { name, description } = await request.json();
 
-    if (!name) {
+    if (!name || !description) {
       return NextResponse.json(
-        { message: 'Category name is required.' },
+        { message: 'Name and description are required.' },
         { status: 400 }
       );
     }
 
-    const category = await prisma.category.update({
+    const updatedCategory = await prisma.category.update({
       where: { id },
-      data: { name },
+      data: {
+        name,
+        description,
+      },
       include: {
+        products: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            image: true,
+            stock: true,
+          },
+        },
         _count: {
           select: {
             products: true,
@@ -94,7 +106,7 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json(updatedCategory);
   } catch (error) {
     console.error('Error updating category:', error);
     return NextResponse.json(
@@ -106,10 +118,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -126,13 +138,12 @@ export async function DELETE(
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'You are not authorized to delete categories.' },
+        { message: 'You do not have permission for this operation.' },
         { status: 403 }
       );
     }
 
-    // Check if category has products
-    const category = await prisma.category.findUnique({
+    const categoryWithProducts = await prisma.category.findUnique({
       where: { id },
       include: {
         _count: {
@@ -143,19 +154,16 @@ export async function DELETE(
       },
     });
 
-    if (!category) {
+    if (!categoryWithProducts) {
       return NextResponse.json(
         { message: 'Category not found.' },
         { status: 404 }
       );
     }
 
-    if (category._count.products > 0) {
+    if (categoryWithProducts._count.products > 0) {
       return NextResponse.json(
-        {
-          message:
-            'Cannot delete category with associated products. Please delete or reassign the products first.',
-        },
+        { message: 'Cannot delete category with existing products.' },
         { status: 400 }
       );
     }
