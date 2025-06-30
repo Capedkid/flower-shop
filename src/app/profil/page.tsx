@@ -85,8 +85,26 @@ export default function Profil() {
 
   return (
     <div className="container py-5">
+      {/* Mobil için tab menü */}
+      <div className="d-md-none mb-4">
+        <div className="nav nav-pills nav-fill" role="tablist">
+          {menu.map((item, index) => (
+            <button
+              key={item.key}
+              className={`nav-link ${selectedTab === item.key ? 'active' : ''}`}
+              onClick={() => setSelectedTab(item.key)}
+              type="button"
+              style={{ fontSize: '0.875rem', padding: '0.5rem' }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="row justify-content-start">
-        <div className="col-md-3 mb-4 mb-md-0">
+        {/* Desktop sidebar - mobilde gizli */}
+        <div className="col-md-3 mb-4 mb-md-0 d-none d-md-block">
           <div className="list-group sticky-top">
             {menu.map((item) => (
               <button
@@ -101,7 +119,7 @@ export default function Profil() {
             ))}
           </div>
         </div>
-        <div className="col-md-8">
+        <div className="col-md-8 col-12">
           <div className="d-flex justify-content-center">
             <div style={{ minWidth: '100%', maxWidth: 600 }}>
               {selectedTab === 'profil' && (

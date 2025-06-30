@@ -259,11 +259,12 @@ export default function CartPage() {
     <div className="min-vh-100 bg-light">
       {/* Header */}
       <div className="container-fluid py-3 bg-white shadow-sm">
-        <div className="d-flex justify-content-between align-items-center">
+        <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
           <div className="d-flex align-items-center gap-3">
             <Link href="/" className="btn btn-outline-secondary">
               <FaArrowLeft className="me-2" />
-              Alışverişe Devam
+              <span className="d-none d-sm-inline">Alışverişe Devam</span>
+              <span className="d-inline d-sm-none">Geri</span>
             </Link>
             <div>
               <h1 className="h3 mb-0 text-dark fw-bold">
@@ -273,7 +274,7 @@ export default function CartPage() {
               <p className="text-light mb-0">{cartItems.length} ürün</p>
             </div>
           </div>
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 align-self-start align-self-md-center">
             <span className="badge bg-primary fs-6">
               Toplam: {formatCurrency(calculateTotal())}
             </span>
@@ -298,7 +299,7 @@ export default function CartPage() {
                   <div key={item.id} className="border-bottom border-light p-4">
                     <div className="row align-items-center">
                       {/* Product Image */}
-                      <div className="col-md-3 col-sm-4">
+                      <div className="col-md-3 col-sm-4 col-12 mb-3 mb-md-0">
                         <div className="position-relative">
                           <img
                             src={item.product.image}
@@ -331,9 +332,9 @@ export default function CartPage() {
                       </div>
 
                       {/* Product Details */}
-                      <div className="col-md-6 col-sm-5">
+                      <div className="col-md-6 col-sm-5 col-12 mb-3 mb-md-0">
                         <h5 className="fw-bold text-white mb-2">{item.product.name}</h5>
-                        <div className="d-flex align-items-center gap-3 mb-2">
+                        <div className="d-flex flex-wrap align-items-center gap-3 mb-2">
                           <span className="badge bg-primary bg-opacity-10 text-primary">
                             <FaLeaf className="me-1" />
                             Çiçek
@@ -349,8 +350,8 @@ export default function CartPage() {
                       </div>
 
                       {/* Quantity Controls */}
-                      <div className="col-md-3 col-sm-3">
-                        <div className="d-flex flex-column align-items-end">
+                      <div className="col-md-3 col-sm-3 col-12">
+                        <div className="d-flex flex-column align-items-center align-items-md-end">
                           <div className="input-group mb-2" style={{width: '120px'}}>
                             <button 
                               className="btn btn-outline-secondary btn-sm" 
@@ -378,7 +379,7 @@ export default function CartPage() {
                               <FaPlus size={10} />
                             </button>
                           </div>
-                          <div className="text-light small">
+                          <div className="text-light small text-center text-md-end">
                             {updatingItem === item.id ? (
                               <div className="spinner-border spinner-border-sm" role="status"></div>
                             ) : (
