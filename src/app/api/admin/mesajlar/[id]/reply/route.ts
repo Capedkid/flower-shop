@@ -5,10 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {

@@ -5,10 +5,10 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -75,10 +75,10 @@ export async function GET(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -144,4 +144,12 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+export async function PUT(
+  request: Request,
+  context: { params: { id: string } }
+) {
+  const { id } = context.params;
+  // ...
 } 
