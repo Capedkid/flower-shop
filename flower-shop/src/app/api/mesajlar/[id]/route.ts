@@ -73,62 +73,51 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        { message: 'You need to be logged in.' },
+        { message: 'Oturum açmanız gerekiyor.' },
         { status: 401 }
       );
     }
 
+    // Sadece mesajın sahibi veya admin silebilir
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
-      select: { id: true },
+      select: { id: true, role: true },
     });
 
-    if (!user) {
-      return NextResponse.json(
-        { message: 'User not found.' },
-        { status: 404 }
-      );
-    }
-
     const message = await prisma.message.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!message) {
       return NextResponse.json(
-        { message: 'Message not found.' },
+        { message: 'Mesaj bulunamadı.' },
         { status: 404 }
       );
     }
 
-    if (message.senderId !== user.id) {
+    if (user?.role !== 'ADMIN' && message.receiverId !== user?.id) {
       return NextResponse.json(
-        { message: 'You are not authorized to delete this message.' },
+        { message: 'Bu mesajı silme yetkiniz yok.' },
         { status: 403 }
       );
     }
 
     await prisma.message.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
-    return NextResponse.json(
-      { message: 'Message deleted successfully.' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Mesaj silindi.' });
   } catch (error) {
-    console.error('Error deleting message:', error);
+    console.error('Mesaj silme hatası:', error);
     return NextResponse.json(
-      { message: 'An error occurred while deleting the message.' },
+      { message: 'Mesaj silinirken bir hata oluştu.' },
       { status: 500 }
     );
   }

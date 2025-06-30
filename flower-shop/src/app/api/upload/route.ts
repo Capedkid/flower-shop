@@ -23,3 +23,4 @@ export async function POST(request: Request) {
   await writeFile(filePath, buffer);
   return NextResponse.json({ url: `/urunler/${fileName}` });
 } 
+

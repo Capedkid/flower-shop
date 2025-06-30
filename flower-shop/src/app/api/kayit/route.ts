@@ -3,7 +3,7 @@ import { hash } from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request) {
-  try {
+  try {`n    const { id } = await params;
     const { name, email, password } = await request.json();
 
     // E-posta kontrolü
@@ -46,3 +46,4 @@ export async function POST(request: Request) {
     );
   }
 } 
+

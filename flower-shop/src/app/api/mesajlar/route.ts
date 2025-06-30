@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
 export async function GET(request: Request) {
-  try {
+  try {`n    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
 
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  try {
+  try {`n    const { id } = await params;
     const { name, email, phone, subject, message, senderId, receiverId } = await request.json();
 
     // Gerekli alanları kontrol et
@@ -115,3 +115,4 @@ export async function POST(request: Request) {
     );
   }
 } 
+

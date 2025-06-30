@@ -3,11 +3,9 @@ import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -32,21 +30,16 @@ export async function PUT(
 
     const { stock } = await request.json();
 
-    if (stock === undefined || stock < 0) {
+    if (typeof stock !== 'number' || stock < 0) {
       return NextResponse.json(
-        { message: 'Geçerli bir stok miktarı gerekli.' },
+        { message: 'Geçerli bir stok miktarı giriniz.' },
         { status: 400 }
       );
     }
 
     const updatedProduct = await prisma.product.update({
-      where: { id: params.id },
-      data: { stock: parseInt(stock) },
-      include: {
-        category: {
-          select: { id: true, name: true }
-        }
-      }
+      where: { id },
+      data: { stock },
     });
 
     return NextResponse.json(updatedProduct);

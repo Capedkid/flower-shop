@@ -45,20 +45,19 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        { message: 'You need to be logged in.' },
+        { message: 'Oturum açmanız gerekiyor.' },
         { status: 401 }
       );
     }
 
+    // Admin kontrolü
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { role: true },
@@ -66,7 +65,7 @@ export async function PUT(
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'You are not authorized to update categories.' },
+        { message: 'Bu işlem için yetkiniz yok.' },
         { status: 403 }
       );
     }
@@ -75,47 +74,39 @@ export async function PUT(
 
     if (!name) {
       return NextResponse.json(
-        { message: 'Category name is required.' },
+        { message: 'Kategori adı gerekli.' },
         { status: 400 }
       );
     }
 
-    const category = await prisma.category.update({
-      where: { id: params.id },
+    const updatedCategory = await prisma.category.update({
+      where: { id },
       data: { name },
-      include: {
-        _count: {
-          select: {
-            products: true,
-          },
-        },
-      },
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json(updatedCategory);
   } catch (error) {
-    console.error('Error updating category:', error);
+    console.error('Kategori güncelleme hatası:', error);
     return NextResponse.json(
-      { message: 'An error occurred while updating the category.' },
+      { message: 'Kategori güncellenirken bir hata oluştu.' },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
       return NextResponse.json(
-        { message: 'You need to be logged in.' },
+        { message: 'Oturum açmanız gerekiyor.' },
         { status: 401 }
       );
     }
 
+    // Admin kontrolü
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
       select: { role: true },
@@ -123,52 +114,20 @@ export async function DELETE(
 
     if (!user || user.role !== 'ADMIN') {
       return NextResponse.json(
-        { message: 'You are not authorized to delete categories.' },
+        { message: 'Bu işlem için yetkiniz yok.' },
         { status: 403 }
       );
     }
 
-    // Check if category has products
-    const category = await prisma.category.findUnique({
-      where: { id: params.id },
-      include: {
-        _count: {
-          select: {
-            products: true,
-          },
-        },
-      },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { message: 'Category not found.' },
-        { status: 404 }
-      );
-    }
-
-    if (category._count.products > 0) {
-      return NextResponse.json(
-        {
-          message:
-            'Cannot delete category with associated products. Please delete or reassign the products first.',
-        },
-        { status: 400 }
-      );
-    }
-
     await prisma.category.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
-    return NextResponse.json(
-      { message: 'Category deleted successfully.' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Kategori silindi.' });
   } catch (error) {
-    console.error('Error deleting category:', error);
+    console.error('Kategori silme hatası:', error);
     return NextResponse.json(
-      { message: 'An error occurred while deleting the category.' },
+      { message: 'Kategori silinirken bir hata oluştu.' },
       { status: 500 }
     );
   }
