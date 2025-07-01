@@ -47,6 +47,8 @@ interface Order {
   updatedAt: string;
 }
 
+export const dynamic = "force-dynamic";
+
 export default function AdminOrdersPage() {
   const { data: session, status } = useSession();
   const router = useRouter();

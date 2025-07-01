@@ -6,6 +6,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { CartContext } from '@/components/Providers';
+import { Suspense } from "react";
 
 interface Product {
   id: string;
@@ -27,6 +28,8 @@ const KATEGORILER = [
   { id: 'orkideler', name: 'Orkideler' },
   { id: 'buketler', name: 'Buketler' },
 ];
+
+export const dynamic = "force-dynamic";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);

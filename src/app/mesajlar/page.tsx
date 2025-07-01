@@ -25,6 +25,8 @@ interface Message {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default function Mesajlar() {
   const { data: session, status } = useSession();
   const router = useRouter();

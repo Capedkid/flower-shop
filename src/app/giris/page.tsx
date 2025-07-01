@@ -1,11 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+
+export const dynamic = "force-dynamic";
 
 export default function Giris() {
   const router = useRouter();

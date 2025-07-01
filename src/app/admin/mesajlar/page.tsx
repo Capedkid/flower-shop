@@ -48,6 +48,8 @@ interface Message {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export default function AdminMessagesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
