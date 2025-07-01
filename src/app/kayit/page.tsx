@@ -7,6 +7,14 @@ import Link from 'next/link';
 export const dynamic = "force-dynamic";
 
 export default function Kayit() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <KayitInner />
+    </Suspense>
+  );
+}
+
+function KayitInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({

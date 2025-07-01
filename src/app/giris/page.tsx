@@ -10,6 +10,14 @@ import { FaEye, FaEyeSlash } from 'react-icons/fa';
 export const dynamic = "force-dynamic";
 
 export default function Giris() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <GirisInner />
+    </Suspense>
+  );
+}
+
+function GirisInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({

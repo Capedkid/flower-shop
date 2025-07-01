@@ -31,7 +31,15 @@ const KATEGORILER = [
 
 export const dynamic = "force-dynamic";
 
-export default function ProductsPage() {
+export default function ProductsPageWrapper() {
+  return (
+    <Suspense fallback={<div>Yükleniyor...</div>}>
+      <ProductsPage />
+    </Suspense>
+  );
+}
+
+function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
