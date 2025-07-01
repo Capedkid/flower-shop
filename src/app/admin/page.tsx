@@ -129,12 +129,11 @@ export default function AdminDashboard() {
   return (
     <div className="container-fluid py-4">
       {/* Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+      <div className="d-flex justify-content-between align-items-center mb-4">
         <div className="d-flex align-items-center gap-3">
           <Link href="/" className="btn btn-outline-secondary">
             <FaHome className="me-2" />
-            <span className="d-none d-sm-inline">Anasayfa</span>
-            <span className="d-inline d-sm-none">Ana</span>
+            Anasayfa
           </Link>
           <div>
             <h1 className="h3 mb-0 text-dark fw-bold">
@@ -144,7 +143,7 @@ export default function AdminDashboard() {
             <p className="text-muted mb-0">Hoş geldiniz, {session?.user?.name}</p>
           </div>
         </div>
-        <div className="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+        <div className="d-flex gap-2">
           <Link href="/admin/urunler" className="btn btn-primary">
             <FaPlus className="me-2" />
             Yeni Ürün Ekle

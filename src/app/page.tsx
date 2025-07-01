@@ -56,7 +56,7 @@ export default function Home() {
       <div className="container my-5">
         {/* Üstte mağaza ve 4 kategori kutusu */}
         <div
-          className="d-grid mb-5 grid-container"
+          className="d-grid mb-5"
           style={{
             gridTemplateColumns: '1.5fr 1fr 1fr',
             gridTemplateRows: '1fr 1fr',

@@ -7,27 +7,27 @@ async function main() {
   const gullerkategori = await prisma.category.upsert({
     where: { id: 'guller' },
     update: {},
-    create: { id: 'guller', name: 'Güller' },
+    create: { id: 'guller', name: 'Güller', description: 'Taze ve güzel güller.' },
   });
   const saksikategori = await prisma.category.upsert({
     where: { id: 'saksi' },
     update: {},
-    create: { id: 'saksi', name: 'Saksı Çiçekleri' },
+    create: { id: 'saksi', name: 'Saksı Çiçekleri', description: 'Ev ve ofisler için saksı çiçekleri.' },
   });
   const orkidelerkategori = await prisma.category.upsert({
     where: { id: 'orkideler' },
     update: {},
-    create: { id: 'orkideler', name: 'Orkideler' },
+    create: { id: 'orkideler', name: 'Orkideler', description: 'Zarif ve şık orkideler.' },
   });
   const buketlerkategori = await prisma.category.upsert({
     where: { id: 'buketler' },
     update: {},
-    create: { id: 'buketler', name: 'Buketler' },
+    create: { id: 'buketler', name: 'Buketler', description: 'Özel günler için çiçek buketleri.' },
   });
   const ciceklerKategori = await prisma.category.upsert({
     where: { id: 'cicekler' },
     update: {},
-    create: { id: 'cicekler', name: 'Çiçekler' },
+    create: { id: 'cicekler', name: 'Çiçekler', description: 'Mevsimlik ve karışık çiçekler.' },
   });
 
   // Önce mevcut ürünleri temizle

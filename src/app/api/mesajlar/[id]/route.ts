@@ -30,43 +30,26 @@ export async function GET(
       );
     }
 
-    const conversation = await prisma.conversation.findUnique({
-      where: { id },
+    // Sadece iki kullanıcı arasındaki mesajları getir
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { senderId: user.id, receiverId: id },
+          { senderId: id, receiverId: user.id },
+        ],
+      },
+      orderBy: { createdAt: 'asc' },
       include: {
-        participants: {
-          select: { id: true, name: true, email: true }
-        },
-        messages: {
-          orderBy: { createdAt: 'asc' },
-          include: {
-            sender: {
-              select: { id: true, name: true, email: true }
-            }
-          }
-        }
-      }
+        sender: { select: { id: true, name: true, email: true } },
+        receiver: { select: { id: true, name: true, email: true } },
+      },
     });
 
-    if (!conversation) {
-      return NextResponse.json(
-        { message: 'Conversation not found.' },
-        { status: 404 }
-      );
-    }
-
-    // Kullanıcı sadece kendi konuşmalarını görebilir (admin hariç)
-    if (user.role !== 'ADMIN' && !conversation.participants.some((p: { id: string }) => p.id === user.id)) {
-      return NextResponse.json(
-        { message: 'You are not authorized to view this conversation.' },
-        { status: 403 }
-      );
-    }
-
-    return NextResponse.json(conversation);
+    return NextResponse.json(messages);
   } catch (error) {
-    console.error('Error fetching conversation:', error);
+    console.error('Error fetching messages:', error);
     return NextResponse.json(
-      { message: 'An error occurred while fetching the conversation.' },
+      { message: 'An error occurred while fetching messages.' },
       { status: 500 }
     );
   }
@@ -99,30 +82,6 @@ export async function POST(
       );
     }
 
-    const conversation = await prisma.conversation.findUnique({
-      where: { id },
-      include: {
-        participants: {
-          select: { id: true }
-        }
-      }
-    });
-
-    if (!conversation) {
-      return NextResponse.json(
-        { message: 'Conversation not found.' },
-        { status: 404 }
-      );
-    }
-
-    // Kullanıcı sadece kendi konuşmalarına mesaj gönderebilir (admin hariç)
-    if (user.role !== 'ADMIN' && !conversation.participants.some((p: { id: string }) => p.id === user.id)) {
-      return NextResponse.json(
-        { message: 'You are not authorized to send messages to this conversation.' },
-        { status: 403 }
-      );
-    }
-
     const { content } = await request.json();
 
     if (!content || content.trim().length === 0) {
@@ -132,17 +91,29 @@ export async function POST(
       );
     }
 
+    // id parametresi, mesajın gönderileceği kullanıcı id'si olacak
+    const receiver = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!receiver) {
+      return NextResponse.json(
+        { message: 'Receiver not found.' },
+        { status: 400 }
+      );
+    }
+
     const message = await prisma.message.create({
       data: {
         content: content.trim(),
         senderId: user.id,
-        conversationId: id,
+        receiverId: receiver.id,
       },
       include: {
-        sender: {
-          select: { id: true, name: true, email: true }
-        }
-      }
+        sender: { select: { id: true, name: true, email: true } },
+        receiver: { select: { id: true, name: true, email: true } },
+      },
     });
 
     return NextResponse.json(message, { status: 201 });

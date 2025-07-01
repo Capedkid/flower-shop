@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaShoppingCart, FaEnvelopeOpen } from 'react-icons/fa';
-import Link from 'next/link';
 
 export default function Profil() {
   const { data: session } = useSession();
@@ -79,32 +78,13 @@ export default function Profil() {
   ];
   if (session?.user?.role !== 'ADMIN') {
     menu.push({ key: 'siparis', label: 'Siparişlerim' });
-    menu.push({ key: 'favori', label: 'Favori Ürünlerim' });
     menu.push({ key: 'mesaj', label: 'Mesajlarım' });
   }
 
   return (
     <div className="container py-5">
-      {/* Mobil için tab menü */}
-      <div className="d-md-none mb-4">
-        <div className="nav nav-pills nav-fill" role="tablist">
-          {menu.map((item, index) => (
-            <button
-              key={item.key}
-              className={`nav-link ${selectedTab === item.key ? 'active' : ''}`}
-              onClick={() => setSelectedTab(item.key)}
-              type="button"
-              style={{ fontSize: '0.875rem', padding: '0.5rem' }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="row justify-content-start">
-        {/* Desktop sidebar - mobilde gizli */}
-        <div className="col-md-3 mb-4 mb-md-0 d-none d-md-block">
+        <div className="col-md-3 mb-4 mb-md-0">
           <div className="list-group sticky-top">
             {menu.map((item) => (
               <button
@@ -119,7 +99,7 @@ export default function Profil() {
             ))}
           </div>
         </div>
-        <div className="col-md-8 col-12">
+        <div className="col-md-8">
           <div className="d-flex justify-content-center">
             <div style={{ minWidth: '100%', maxWidth: 600 }}>
               {selectedTab === 'profil' && (
@@ -190,7 +170,6 @@ export default function Profil() {
                 </div>
               )}
               {selectedTab === 'siparis' && session?.user?.role !== 'ADMIN' && <OrdersSection />}
-              {selectedTab === 'favori' && session?.user?.role !== 'ADMIN' && <FavorilerSection />}
               {selectedTab === 'mesaj' && session?.user?.role !== 'ADMIN' && <MessagesSection userId={session?.user?.id} />}
             </div>
           </div>
@@ -415,81 +394,6 @@ function MessagesSection({ userId }: { userId: string }) {
           })}
         </ul>
       </div>
-    </div>
-  );
-}
-
-// Favorilerim bölümü
-function FavorilerSection() {
-  const [favoriler, setFavoriler] = React.useState<any[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState('');
-  const [removingId, setRemovingId] = React.useState<string | null>(null);
-
-  const fetchFavoriler = async () => {
-    try {
-      const res = await fetch('/api/favoriler');
-      if (!res.ok) throw new Error('Favoriler alınamadı');
-      const data = await res.json();
-      setFavoriler(data);
-    } catch (err) {
-      setError('Favoriler alınamadı.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  React.useEffect(() => {
-    fetchFavoriler();
-  }, []);
-
-  const handleRemove = async (productId: string) => {
-    setRemovingId(productId);
-    try {
-      const res = await fetch('/api/favoriler', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
-      });
-      if (!res.ok) throw new Error('Favoriden çıkarılamadı');
-      setFavoriler(favoriler.filter(fav => fav.id !== productId));
-    } catch (err) {
-      setError('Favoriden çıkarılamadı.');
-    } finally {
-      setRemovingId(null);
-    }
-  };
-
-  if (loading) {
-    return <div className="text-center my-4"><div className="spinner-border text-primary" role="status"></div></div>;
-  }
-  if (error) {
-    return <div className="alert alert-danger my-4">{error}</div>;
-  }
-  if (!favoriler.length) {
-    return <div className="alert alert-info my-4">Henüz favori ürününüz yok.</div>;
-  }
-  return (
-    <div className="row g-4 mt-2">
-      {favoriler.map((urun) => (
-        <div key={urun.id} className="col-12 col-sm-6 col-md-4">
-          <div className="card shadow-sm bg-white border-0 h-100 d-flex flex-column justify-content-between" style={{ borderRadius: 20 }}>
-            <div className="d-flex justify-content-center align-items-center position-relative" style={{ height: 180, background: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, overflow: 'hidden' }}>
-              <img src={urun.image} alt={urun.name} style={{ maxHeight: 140, maxWidth: '100%', objectFit: 'contain', borderRadius: 12 }} />
-            </div>
-            <div className="card-body text-center p-3 d-flex flex-column justify-content-between">
-              <h5 className="card-title fw-bold mb-2" style={{ color: '#222', fontSize: 20 }}>{urun.name}</h5>
-              <div className="mb-2 fw-bold" style={{ fontSize: 18, color: '#222' }}>{urun.price.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
-              <Link href={`/urunler/${urun.id}`} className="btn btn-primary w-100 fw-bold py-2 mb-2" style={{ borderRadius: 14 }}>
-                Ürünü İncele
-              </Link>
-              <button className="btn btn-outline-danger w-100 fw-bold py-2" style={{ borderRadius: 14 }} onClick={() => handleRemove(urun.id)} disabled={removingId === urun.id}>
-                {removingId === urun.id ? 'Çıkarılıyor...' : 'Favoriden Çıkar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }

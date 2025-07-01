@@ -5,10 +5,9 @@ import { authOptions } from '@/lib/auth';
 
 export async function PUT(
   request: Request,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = context.params;
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
@@ -41,7 +40,7 @@ export async function PUT(
     }
 
     const updatedProduct = await prisma.product.update({
-      where: { id },
+      where: { id: params.id },
       data: { stock: parseInt(stock) },
       include: {
         category: {

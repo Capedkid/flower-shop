@@ -19,9 +19,7 @@ import {
   FaShare,
   FaPhone,
   FaMapMarkerAlt,
-  FaClock,
-  FaComment,
-  FaThumbsUp
+  FaClock
 } from 'react-icons/fa';
 import { CartContext } from '@/components/Providers';
 
@@ -38,16 +36,6 @@ interface Product {
   };
 }
 
-interface Review {
-  id: string;
-  rating: number;
-  comment?: string;
-  createdAt: string;
-  user: {
-    name: string;
-  };
-}
-
 export default function ProductPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
@@ -59,17 +47,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
   const [addingToCart, setAddingToCart] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { refreshCart } = useContext(CartContext);
-  
-  // Review state'leri
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [averageRating, setAverageRating] = useState(0);
-  const [totalReviews, setTotalReviews] = useState(0);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [userRating, setUserRating] = useState(0);
-  const [userComment, setUserComment] = useState('');
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [canReview, setCanReview] = useState(false);
-  const [hasReviewed, setHasReviewed] = useState(false);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -90,151 +67,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
     fetchProductDetails();
   }, [params.id]);
-
-  // Kullanıcının favori durumunu kontrol et
-  useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      if (!session) return;
-      
-      try {
-        const response = await fetch('/api/favoriler');
-        if (response.ok) {
-          const favorites = await response.json();
-          const isFavorited = favorites.some((fav: any) => fav.id === params.id);
-          setIsWishlisted(isFavorited);
-        }
-      } catch (err) {
-        console.error('Error checking favorite status:', err);
-      }
-    };
-
-    checkFavoriteStatus();
-  }, [session, params.id]);
-
-  // Review'ları getir
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        const response = await fetch(`/api/reviews?productId=${params.id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setReviews(data.reviews || []);
-          setAverageRating(data.averageRating || 0);
-          setTotalReviews(data.totalReviews || 0);
-        }
-      } catch (err) {
-        console.error('Error fetching reviews:', err);
-      }
-    };
-
-    fetchReviews();
-  }, [params.id]);
-
-  // Kullanıcının değerlendirme yapıp yapamayacağını kontrol et
-  useEffect(() => {
-    const checkReviewEligibility = async () => {
-      if (!session) return;
-      
-      try {
-        // Kullanıcının bu ürünü satın alıp almadığını kontrol et
-        const ordersResponse = await fetch('/api/siparisler');
-        if (ordersResponse.ok) {
-          const orders = await ordersResponse.json();
-          const hasPurchased = orders.some((order: any) => 
-            order.items.some((item: any) => item.product.id === params.id)
-          );
-          setCanReview(hasPurchased);
-          
-          // Daha önce değerlendirme yapıp yapmadığını kontrol et
-          const reviewsResponse = await fetch(`/api/reviews?productId=${params.id}`);
-          if (reviewsResponse.ok) {
-            const reviewsData = await reviewsResponse.json();
-            const userReview = reviewsData.reviews.find((review: Review) => 
-              review.user.name === session.user?.name
-            );
-            setHasReviewed(!!userReview);
-          }
-        }
-      } catch (err) {
-        console.error('Error checking review eligibility:', err);
-      }
-    };
-
-    checkReviewEligibility();
-  }, [session, params.id]);
-
-  const toggleFavorite = async () => {
-    if (!session) {
-      router.push('/giris?callbackUrl=' + encodeURIComponent(`/urunler/${params.id}`));
-      return;
-    }
-
-    try {
-      if (isWishlisted) {
-        // Favoriden çıkar
-        const response = await fetch('/api/favoriler', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: params.id }),
-        });
-        if (response.ok) {
-          setIsWishlisted(false);
-        }
-      } else {
-        // Favorilere ekle
-        const response = await fetch('/api/favoriler', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId: params.id }),
-        });
-        if (response.ok) {
-          setIsWishlisted(true);
-        }
-      }
-    } catch (err) {
-      console.error('Error toggling favorite:', err);
-    }
-  };
-
-  const submitReview = async () => {
-    if (!session || !userRating) return;
-
-    setSubmittingReview(true);
-    try {
-      const response = await fetch('/api/reviews', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: params.id,
-          rating: userRating,
-          comment: userComment,
-        }),
-      });
-
-      if (response.ok) {
-        setShowReviewForm(false);
-        setUserRating(0);
-        setUserComment('');
-        setHasReviewed(true);
-        // Review'ları yeniden yükle
-        const reviewsResponse = await fetch(`/api/reviews?productId=${params.id}`);
-        if (reviewsResponse.ok) {
-          const data = await reviewsResponse.json();
-          setReviews(data.reviews || []);
-          setAverageRating(data.averageRating || 0);
-          setTotalReviews(data.totalReviews || 0);
-        }
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || 'Değerlendirme gönderilemedi');
-      }
-    } catch (err) {
-      console.error('Error submitting review:', err);
-      alert('Değerlendirme gönderilemedi');
-    } finally {
-      setSubmittingReview(false);
-    }
-  };
 
   const addToCart = async () => {
     if (!session) {
@@ -289,25 +121,6 @@ export default function ProductPage({ params }: { params: { id: string } }) {
     if (stock === 0) return { text: 'Stok Yok', class: 'text-danger', icon: FaBox };
     if (stock < 10) return { text: 'Son ' + stock + ' Adet', class: 'text-warning', icon: FaClock };
     return { text: 'Stokta Mevcut', class: 'text-success', icon: FaCheckCircle };
-  };
-
-  const renderStars = (rating: number, interactive = false, onStarClick?: (star: number) => void) => {
-    return (
-      <div className="d-flex text-warning">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <FaStar
-            key={star}
-            size={16}
-            className={interactive ? 'cursor-pointer' : ''}
-            style={{
-              color: star <= rating ? '#ffc107' : '#e4e5e9',
-              cursor: interactive ? 'pointer' : 'default',
-            }}
-            onClick={() => interactive && onStarClick && onStarClick(star)}
-          />
-        ))}
-      </div>
-    );
   };
 
   if (loading) {
@@ -400,7 +213,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 <div className="position-absolute top-0 end-0 p-3">
                   <button 
                     className={`btn btn-light rounded-circle shadow-sm ${isWishlisted ? 'text-danger' : 'text-muted'}`}
-                    onClick={toggleFavorite}
+                    onClick={() => setIsWishlisted(!isWishlisted)}
                     style={{width: '45px', height: '45px'}}
                   >
                     <FaHeart />
@@ -427,10 +240,12 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
                 {/* Rating */}
                 <div className="d-flex align-items-center mb-3">
-                  {renderStars(averageRating)}
-                  <span className="text-muted ms-2">
-                    ({averageRating.toFixed(1)} - {totalReviews} değerlendirme)
-                  </span>
+                  <div className="d-flex text-warning me-2">
+                    {[...Array(5)].map((_, i) => (
+                      <FaStar key={i} size={16} />
+                    ))}
+                  </div>
+                  <span className="text-muted">(4.8 - 127 değerlendirme)</span>
                 </div>
 
                 {/* Price */}
