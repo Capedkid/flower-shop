@@ -76,7 +76,7 @@ export default function Home() {
             <img
               src="/magaza.png"
               alt="Mağaza"
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </a>
           {/* Sağ üst: Güller */}
@@ -87,7 +87,7 @@ export default function Home() {
             <img
               src="/guller.png"
               alt="Güller"
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+              style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', display: 'block' }}
             />
           </a>
           {/* Sağ üst: Saksı Çiçekleri */}
@@ -98,7 +98,7 @@ export default function Home() {
             <img
               src="/saksi.png"
               alt="Saksı Çiçekleri"
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+              style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', display: 'block' }}
             />
           </a>
           {/* Sağ alt: Orkideler */}
@@ -109,7 +109,7 @@ export default function Home() {
             <img
               src="/orkide.png"
               alt="Orkideler"
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+              style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', display: 'block' }}
             />
           </a>
           {/* Sağ alt: Buketler */}
@@ -120,7 +120,7 @@ export default function Home() {
             <img
               src="/buket.png"
               alt="Buketler"
-              style={{ maxWidth: '100%', height: 'auto', objectFit: 'cover', display: 'block' }}
+              style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', display: 'block' }}
             />
           </a>
         </div>
