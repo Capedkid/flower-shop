@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useContext } from 'react';
 import Link from 'next/link';
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaHeart } from 'react-icons/fa';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { CartContext } from '@/components/Providers';
@@ -51,6 +51,7 @@ function ProductsPage() {
   const { refreshCart } = useContext(CartContext);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [successId, setSuccessId] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (kategoriParam && kategoriParam !== selectedCategory) {
@@ -79,6 +80,20 @@ function ProductsPage() {
     };
     fetchProducts();
   }, []);
+
+  // Kullanıcının favori ürünlerini çek
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!session) return;
+      try {
+        const res = await fetch('/api/favoriler');
+        if (!res.ok) return;
+        const data = await res.json();
+        setFavoriteIds(data.map((p: any) => p.id));
+      } catch {}
+    };
+    fetchFavorites();
+  }, [session]);
 
   const handleCategoryClick = (catId: string) => {
     setSelectedCategory(catId);
@@ -109,6 +124,31 @@ function ProductsPage() {
       // Hata yönetimi eklenebilir
     } finally {
       setAddingId(null);
+    }
+  };
+
+  // Favori ekle/kaldır fonksiyonu
+  const handleToggleFavorite = async (productId: string) => {
+    if (!session) {
+      router.push('/giris?callbackUrl=' + encodeURIComponent('/urunler'));
+      return;
+    }
+    if (favoriteIds.includes(productId)) {
+      // Favoriden çıkar
+      await fetch('/api/favoriler', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      setFavoriteIds(favoriteIds.filter(id => id !== productId));
+    } else {
+      // Favoriye ekle
+      await fetch('/api/favoriler', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      setFavoriteIds([...favoriteIds, productId]);
     }
   };
 
@@ -179,6 +219,15 @@ function ProductsPage() {
                     onMouseOver={e => (e.currentTarget.style.transform = 'scale(1.08)')}
                     onMouseOut={e => (e.currentTarget.style.transform = 'scale(1)')}
                   />
+                  {/* Favori (kalp) butonu */}
+                  <button
+                    className="btn btn-light position-absolute top-0 end-0 m-2 p-2 rounded-circle shadow-sm"
+                    style={{ zIndex: 2, color: favoriteIds.includes(product.id) ? '#e1006a' : '#bbb', border: '1px solid #eee' }}
+                    onClick={() => handleToggleFavorite(product.id)}
+                    aria-label={favoriteIds.includes(product.id) ? 'Favoriden çıkar' : 'Favorilere ekle'}
+                  >
+                    <FaHeart size={22} />
+                  </button>
                 </div>
                 <div className="card-body text-center p-3 d-flex flex-column justify-content-between">
                   <h5 className="card-title fw-bold mb-2" style={{ color: '#222', fontSize: 22, letterSpacing: 0.2 }}>{product.name}</h5>
