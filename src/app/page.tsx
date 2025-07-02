@@ -385,35 +385,35 @@ export default function Home() {
           </p>
         </div>
       </div>
+      {/* Responsive mobil stil */}
+      <style jsx global>{`
+        @media (max-width: 600px) {
+          .homepage-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px !important;
+            min-height: unset !important;
+          }
+          .homepage-grid .magaza-link {
+            width: 100% !important;
+            height: auto !important;
+            grid-row: unset !important;
+            grid-column: unset !important;
+            order: 0;
+          }
+          .homepage-grid .magaza-link img {
+            width: 100% !important;
+            height: auto !important;
+            object-fit: contain !important;
+            border-radius: 12px !important;
+          }
+          .homepage-grid .kategori-link {
+            width: 100% !important;
+            height: auto !important;
+            order: unset;
+          }
+        }
+      `}</style>
     </div>
   );
-}
-
-<style jsx global>{`
-  @media (max-width: 600px) {
-    .homepage-grid {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 12px !important;
-      min-height: unset !important;
-    }
-    .homepage-grid .magaza-link {
-      width: 100% !important;
-      height: auto !important;
-      grid-row: unset !important;
-      grid-column: unset !important;
-      order: 0;
-    }
-    .homepage-grid .magaza-link img {
-      width: 100% !important;
-      height: auto !important;
-      object-fit: contain !important;
-      border-radius: 12px !important;
-    }
-    .homepage-grid .kategori-link {
-      width: 100% !important;
-      height: auto !important;
-      order: unset;
-    }
-  }
-`}</style> 
+} 
