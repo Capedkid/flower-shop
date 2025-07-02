@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaShoppingCart, FaEnvelopeOpen } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaShoppingCart, FaEnvelopeOpen, FaHeart, FaTrash, FaSearch } from 'react-icons/fa';
 
 export default function Profil() {
   const { data: session } = useSession();
@@ -75,6 +75,7 @@ export default function Profil() {
   const menu = [
     { key: 'profil', label: 'Profil Bilgilerim' },
     { key: 'sifre', label: 'Şifre Değiştir' },
+    { key: 'favori', label: 'Favorilerim' },
   ];
   if (session?.user?.role !== 'ADMIN') {
     menu.push({ key: 'siparis', label: 'Siparişlerim' });
@@ -171,6 +172,7 @@ export default function Profil() {
               )}
               {selectedTab === 'siparis' && session?.user?.role !== 'ADMIN' && <OrdersSection />}
               {selectedTab === 'mesaj' && session?.user?.role !== 'ADMIN' && <MessagesSection userId={session?.user?.id} />}
+              {selectedTab === 'favori' && <FavoritesSection />}
             </div>
           </div>
         </div>
@@ -393,6 +395,74 @@ function MessagesSection({ userId }: { userId: string }) {
             );
           })}
         </ul>
+      </div>
+    </div>
+  );
+}
+
+// Favorilerim bölümü
+function FavoritesSection() {
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const fetchFavorites = async () => {
+    try {
+      const res = await fetch('/api/favoriler');
+      if (!res.ok) throw new Error('Favoriler alınamadı');
+      const data = await res.json();
+      setFavorites(data);
+    } catch (err) {
+      setError('Favoriler alınamadı.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => { fetchFavorites(); }, []);
+
+  const handleRemove = async (productId: string) => {
+    try {
+      const res = await fetch('/api/favoriler', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId }),
+      });
+      if (!res.ok) throw new Error('Favori kaldırılamadı');
+      setFavorites(favorites.filter(fav => fav.id !== productId));
+    } catch (err) {
+      alert('Favori kaldırılamadı.');
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center my-4"><div className="spinner-border text-primary" role="status"></div></div>;
+  }
+  if (error) {
+    return <div className="alert alert-danger my-4">{error}</div>;
+  }
+  if (!favorites.length) {
+    return <div className="alert alert-info my-4">Henüz favori ürününüz yok.</div>;
+  }
+  return (
+    <div className="card bg-white text-dark shadow mt-4">
+      <div className="card-body">
+        <h5 className="fw-bold mb-3"><FaHeart className="me-2 text-danger" />Favorilerim</h5>
+        <div className="row g-3">
+          {favorites.map((product) => (
+            <div key={product.id} className="col-12 col-md-6">
+              <div className="d-flex align-items-center border rounded p-2 bg-light">
+                <img src={product.image} alt={product.name} style={{ width: 70, height: 70, objectFit: 'cover', borderRadius: 10, marginRight: 16 }} />
+                <div className="flex-grow-1">
+                  <div className="fw-bold" style={{ fontSize: 18 }}>{product.name}</div>
+                  <div className="text-muted mb-2" style={{ fontSize: 15 }}>{product.price.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</div>
+                  <div className="d-flex gap-2">
+                    <a href={`/urunler/${product.id}`} className="btn btn-sm btn-primary" style={{ borderRadius: 8 }}><FaSearch className="me-1" />İncele</a>
+                    <button className="btn btn-sm btn-outline-danger" style={{ borderRadius: 8 }} onClick={() => handleRemove(product.id)}><FaTrash className="me-1" />Kaldır</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

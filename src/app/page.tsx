@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSignOutAlt, FaPhone, FaMapMarkerAlt, FaEnvelope, FaTruck, FaLeaf, FaPalette, FaMedal } from 'react-icons/fa';
 import React from 'react';
 import Image from 'next/image';
+import './globals.css';
 
 const hizmetler = [
   { 
@@ -56,7 +57,7 @@ export default function Home() {
       <div className="container my-5">
         {/* Üstte mağaza ve 4 kategori kutusu */}
         <div
-          className="d-grid mb-5"
+          className="d-grid mb-5 homepage-grid"
           style={{
             gridTemplateColumns: '1.5fr 1fr 1fr',
             gridTemplateRows: '1fr 1fr',
@@ -71,6 +72,7 @@ export default function Home() {
           {/* Sol büyük mağaza fotoğrafı (2 satırı kaplar) */}
           <a
             href="/urunler"
+            className="magaza-link"
             style={{ gridRow: '1 / span 2', gridColumn: '1 / 2', display: 'block', height: '100%' }}
           >
             <img
@@ -82,6 +84,7 @@ export default function Home() {
           {/* Sağ üst: Güller */}
           <a
             href="/urunler?kategori=guller"
+            className="kategori-link"
             style={{ gridRow: '1 / 2', gridColumn: '2 / 3', background: 'linear-gradient(135deg, #ffe259 0%, #ffa751 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <img
@@ -93,6 +96,7 @@ export default function Home() {
           {/* Sağ üst: Saksı Çiçekleri */}
           <a
             href="/urunler?kategori=saksi"
+            className="kategori-link"
             style={{ gridRow: '1 / 2', gridColumn: '3 / 4', background: 'linear-gradient(135deg, #36d1c4 0%, #1e90ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <img
@@ -104,6 +108,7 @@ export default function Home() {
           {/* Sağ alt: Orkideler */}
           <a
             href="/urunler?kategori=orkideler"
+            className="kategori-link"
             style={{ gridRow: '2 / 3', gridColumn: '2 / 3', background: 'linear-gradient(135deg, #f797a7 0%, #f16b6b 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <img
@@ -115,6 +120,7 @@ export default function Home() {
           {/* Sağ alt: Buketler */}
           <a
             href="/urunler?kategori=buketler"
+            className="kategori-link"
             style={{ gridRow: '2 / 3', gridColumn: '3 / 4', background: 'linear-gradient(135deg, #f797a7 0%, #f9d423 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
             <img
@@ -381,4 +387,33 @@ export default function Home() {
       </div>
     </div>
   );
-} 
+}
+
+<style jsx global>{`
+  @media (max-width: 600px) {
+    .homepage-grid {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      min-height: unset !important;
+    }
+    .homepage-grid .magaza-link {
+      width: 100% !important;
+      height: auto !important;
+      grid-row: unset !important;
+      grid-column: unset !important;
+      order: 0;
+    }
+    .homepage-grid .magaza-link img {
+      width: 100% !important;
+      height: auto !important;
+      object-fit: contain !important;
+      border-radius: 12px !important;
+    }
+    .homepage-grid .kategori-link {
+      width: 100% !important;
+      height: auto !important;
+      order: unset;
+    }
+  }
+`}</style> 
