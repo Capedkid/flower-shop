@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/lib/auth';
+import { compare, hash } from 'bcryptjs';
 
 export async function GET() {
   try {
@@ -89,6 +90,63 @@ export async function PUT(request: Request) {
     console.error('Profil güncelleme hatası:', error);
     return NextResponse.json(
       { message: 'Profil güncellenirken bir hata oluştu.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { message: 'Oturum açmanız gerekiyor.' },
+        { status: 401 }
+      );
+    }
+    const { currentPassword, newPassword, newPassword2 } = await request.json();
+    if (!currentPassword || !newPassword || !newPassword2) {
+      return NextResponse.json(
+        { message: 'Tüm alanlar zorunludur.' },
+        { status: 400 }
+      );
+    }
+    if (newPassword !== newPassword2) {
+      return NextResponse.json(
+        { message: 'Yeni şifreler eşleşmiyor.' },
+        { status: 400 }
+      );
+    }
+    if (newPassword.length < 8 || !/[A-Za-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return NextResponse.json(
+        { message: 'Şifre en az 8 karakter, harf ve rakam içermelidir.' },
+        { status: 400 }
+      );
+    }
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user) {
+      return NextResponse.json(
+        { message: 'Kullanıcı bulunamadı.' },
+        { status: 404 }
+      );
+    }
+    const isMatch = await compare(currentPassword, user.password);
+    if (!isMatch) {
+      return NextResponse.json(
+        { message: 'Mevcut şifre yanlış.' },
+        { status: 400 }
+      );
+    }
+    const hashed = await hash(newPassword, 10);
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: { password: hashed },
+    });
+    return NextResponse.json({ message: 'Şifre başarıyla güncellendi.' });
+  } catch (error) {
+    console.error('Şifre güncelleme hatası:', error);
+    return NextResponse.json(
+      { message: 'Şifre güncellenirken bir hata oluştu.' },
       { status: 500 }
     );
   }

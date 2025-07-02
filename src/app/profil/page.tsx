@@ -213,7 +213,7 @@ function ChangePasswordForm() {
       const res = await fetch('/api/kullanici/profil', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ currentPassword, newPassword, newPassword2 }),
       });
       if (!res.ok) throw new Error('Şifre güncellenemedi.');
       setSuccess('Şifreniz başarıyla güncellendi!');
