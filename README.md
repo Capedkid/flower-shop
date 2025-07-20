@@ -17,7 +17,6 @@ Bu proje, Next.js, Prisma ve SQLite kullanılarak geliştirilmiş bir çiçekçi
 - Next.js
 - Prisma ORM
 - SQLite
-- Tailwind CSS
 - TypeScript
 
 ## Kurulum

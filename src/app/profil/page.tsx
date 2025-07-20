@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaEdit, FaShoppingCart, FaEnvelopeOpen, FaHeart, FaTrash, FaSearch } from 'react-icons/fa';
 

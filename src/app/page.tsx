@@ -4,7 +4,6 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { FaShoppingCart, FaUser, FaSignOutAlt, FaPhone, FaMapMarkerAlt, FaEnvelope, FaTruck, FaLeaf, FaPalette, FaMedal } from 'react-icons/fa';
-import React from 'react';
 import Image from 'next/image';
 import './globals.css';
 

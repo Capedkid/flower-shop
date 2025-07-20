@@ -1,7 +1,7 @@
 'use client';
 
 import { SessionProvider } from 'next-auth/react';
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 export const CartContext = createContext({
   cartCount: 0,

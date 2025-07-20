@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useState, useEffect, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
