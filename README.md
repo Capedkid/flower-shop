@@ -1,6 +1,9 @@
-# Çiçekçi E-Ticaret Sitesi
+# Flower Shop
 
-Bu proje, Next.js, Prisma ve SQLite kullanılarak geliştirilmiş bir çiçekçi e-ticaret web uygulamasıdır.
+Modern çiçekçi e-ticaret sitesi.
+
+## Auto-Deploy Test
+Bu değişiklik GitHub Actions ile otomatik deploy edilecek.
 
 ## Özellikler
 
