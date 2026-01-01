@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { FaTruck, FaLeaf, FaPalette, FaMedal, FaQuoteLeft } from 'react-icons/fa';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import './globals.css';
 
 const categories = [
@@ -68,9 +68,9 @@ export default function Home() {
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } }
+    visible: { y: 0, opacity: 1, transition: { duration: 0.8 } }
   };
 
   if (status === 'loading') {
@@ -101,7 +101,7 @@ export default function Home() {
               <motion.div
                 initial={{ x: -100, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 1.2 }}
               >
                 <span className="text-uppercase tracking-widest small mb-3 d-block font-outfit" style={{ color: 'var(--accent-gold)', letterSpacing: '0.4em' }}>
                   SAMSUN'DAN DÜNYAYA ZARAFET

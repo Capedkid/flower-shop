@@ -104,8 +104,8 @@ export default function AdminProductPanel() {
       setSuccess('Ürün başarıyla eklendi.');
       setNewProduct({ name: '', description: '', price: '', stock: '', image: '', categoryId: '' });
       fetchProducts();
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ürün eklenemedi.');
     }
   };
 
@@ -123,9 +123,10 @@ export default function AdminProductPanel() {
       }
       setSuccess('Ürün başarıyla silindi.');
       fetchProducts();
-    } catch (err: any) {
-      setError(err.message);
-      alert('Silme hatası: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Ürün silinemedi.';
+      setError(message);
+      alert('Silme hatası: ' + message);
     }
   };
 
@@ -228,7 +229,7 @@ export default function AdminProductPanel() {
                   Görsel Yükle
                 </button>
                 {selectedFileName && (
-                  <span className="small text-secondary" style={{maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block'}}>{selectedFileName}</span>
+                  <span className="small text-secondary" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block' }}>{selectedFileName}</span>
                 )}
               </div>
               {newProduct.image && (
@@ -258,7 +259,7 @@ export default function AdminProductPanel() {
           <tbody>
             {products.map(product => (
               <tr key={product.id}>
-                <td><img src={product.image} alt={product.name} style={{width: 60, height: 60, objectFit: 'contain'}} /></td>
+                <td><img src={product.image} alt={product.name} style={{ width: 60, height: 60, objectFit: 'contain' }} /></td>
                 <td>{product.name}</td>
                 <td>{product.category?.name}</td>
                 <td>{product.price} TL</td>

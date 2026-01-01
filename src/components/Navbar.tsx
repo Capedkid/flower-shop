@@ -3,7 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { FaShoppingCart, FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaShoppingCart, FaUser } from 'react-icons/fa';
 import React from 'react';
 import Image from 'next/image';
 import { CartContext } from './Providers';

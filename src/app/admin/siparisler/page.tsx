@@ -4,21 +4,17 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  FaShoppingCart, 
-  FaEye, 
-  FaEdit, 
-  FaTruck, 
+import {
+  FaShoppingCart,
+  FaEye,
+  FaEdit,
+  FaTruck,
   FaCheckCircle,
   FaClock,
   FaExclamationTriangle,
   FaArrowLeft,
-  FaFilter,
   FaSearch,
-  FaCalendarAlt,
-  FaUser,
-  FaPhone,
-  FaMapMarkerAlt
+  FaUser
 } from 'react-icons/fa';
 
 interface OrderItem {
@@ -117,10 +113,10 @@ export default function AdminOrdersPage() {
       'DELIVERED': { class: 'bg-success', text: 'Teslim Edildi', icon: FaCheckCircle },
       'CANCELLED': { class: 'bg-danger', text: 'İptal Edildi', icon: FaExclamationTriangle }
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig];
     const Icon = config.icon;
-    
+
     return (
       <span className={`badge ${config.class} d-flex align-items-center gap-1`}>
         <Icon size={12} />
@@ -149,8 +145,8 @@ export default function AdminOrdersPage() {
   const filteredOrders = orders.filter(order => {
     const matchesStatus = filterStatus === 'ALL' || order.status === filterStatus;
     const matchesSearch = order.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.id.toLowerCase().includes(searchTerm.toLowerCase());
+      order.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
